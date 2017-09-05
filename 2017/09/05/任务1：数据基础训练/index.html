@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="任务1：数据基础训练 1.输入：一列数值型数据，输出:与输入等长的一列数据，每一项是输入数据在整列中的排序序号。如，输入：0.1 0.8 0.25，输出1 3 2 2.求给定一组数值型数据的均值、方差 3.给定两列数值型数据，求其和，积，差，商，输出数据列和输入等长，每一项为输入数据相应位置数据的和、积、差、商 4.给定一组数值型数据，将其归一化，（两种方式，最大最小归一化，Z-score标准化）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据预处理练习 等频分箱、one_hot(独热编码)、数据归一化python">
+<meta property="og:url" content="http://yoursite.com/2017/09/05/任务1：数据基础训练/index.html">
+<meta property="og:site_name" content="Backyard">
+<meta property="og:description" content="任务1：数据基础训练 1.输入：一列数值型数据，输出:与输入等长的一列数据，每一项是输入数据在整列中的排序序号。如，输入：0.1 0.8 0.25，输出1 3 2 2.求给定一组数值型数据的均值、方差 3.给定两列数值型数据，求其和，积，差，商，输出数据列和输入等长，每一项为输入数据相应位置数据的和、积、差、商 4.给定一组数值型数据，将其归一化，（两种方式，最大最小归一化，Z-score标准化）">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://img.blog.csdn.net/20161123173433605">
+<meta property="og:updated_time" content="2017-09-05T15:25:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据预处理练习 等频分箱、one_hot(独热编码)、数据归一化python">
+<meta name="twitter:description" content="任务1：数据基础训练 1.输入：一列数值型数据，输出:与输入等长的一列数据，每一项是输入数据在整列中的排序序号。如，输入：0.1 0.8 0.25，输出1 3 2 2.求给定一组数值型数据的均值、方差 3.给定两列数值型数据，求其和，积，差，商，输出数据列和输入等长，每一项为输入数据相应位置数据的和、积、差、商 4.给定一组数值型数据，将其归一化，（两种方式，最大最小归一化，Z-score标准化）">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20161123173433605">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/09/05/任务1：数据基础训练/"/>
+
+
+
+
+
+  <title>数据预处理练习 等频分箱、one_hot(独热编码)、数据归一化python | Backyard</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Backyard</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Make AI everywhere.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/05/任务1：数据基础训练/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Evan chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/homePic.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Backyard">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">数据预处理练习 等频分箱、one_hot(独热编码)、数据归一化python</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-05T23:13:46+08:00">
+                2017-09-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>任务1：数据基础训练</p>
+<pre><code>1.输入：一列数值型数据，输出:与输入等长的一列数据，每一项是输入数据在整列中的排序序号。如，输入：0.1 0.8 0.25，输出1 3 2
+2.求给定一组数值型数据的均值、方差
+3.给定两列数值型数据，求其和，积，差，商，输出数据列和输入等长，每一项为输入数据相应位置数据的和、积、差、商
+4.给定一组数值型数据，将其归一化，（两种方式，最大最小归一化，Z-score标准化）
+5.给定一组数值型数据以及一个预先给定的整数，将该组数据进行装箱
+6.给定一组标称型数据，利用one-hot编码方法将其转换为多组01值数据
+</code></pre><p>在数据练习中会用到numpy,sklearn,scipy等第三方模块，需要的朋友可以私信</p>
+<p>为了方便起见设练习操作的对象如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">listOne=[1,2,3,4,5,6,7,8,9,10,11,12,13]</div><div class="line">name   =[&apos;steven&apos;,&apos;robin&apos;,&apos;obama&apos;]</div><div class="line">action =[&apos;playing&apos;,&apos;eating&apos;,&apos;sleeping&apos;]</div><div class="line">local  =[&apos;home&apos;,&apos;school&apos;,&apos;playground&apos;]</div><div class="line">mixList=[name,action,local]</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div></pre></td><td class="code"><pre><div class="line">#taskOne</div><div class="line">def indexList(list):</div><div class="line">    return map(lambda x:sorted(list).index(x)+1,list)</div><div class="line">     </div><div class="line">#taskTwo</div><div class="line">from numpy import average,std</div><div class="line">def aveStd(list):</div><div class="line">    return average(list),std(list)</div><div class="line"></div><div class="line">#taskThree</div><div class="line">def opreList(list_1,list_2,operation=&apos;add&apos;):</div><div class="line">    func=lambda L:L[0]+L[1]</div><div class="line">    if(operation==&apos;sub&apos;):</div><div class="line">        func=lambda L:L[0]-L[1]</div><div class="line">    if(operation==&apos;multi&apos;):</div><div class="line">        func=lambda L:L[0]*L[1]</div><div class="line">    if(operation==&apos;div&apos;):</div><div class="line">        func=lambda L:L[0]*1.0/L[1]</div><div class="line">    innerList=map(func,zip(list_1,list_2))</div><div class="line">    return innerList</div><div class="line"></div><div class="line">#taskFour</div><div class="line">from numpy import array</div><div class="line">from sklearn import preprocessing</div><div class="line">def normalization(list,method=&apos;z_score&apos;,feature_range=(0,1)):</div><div class="line">    x=x_scaled=array(list)*1.0</div><div class="line">    if(method==&apos;z_score&apos;):</div><div class="line">        x_scaled=preprocessing.scale(x)</div><div class="line">        return x_scaled</div><div class="line">    if(method==&apos;MaxMin&apos;):</div><div class="line">        Scaler=preprocessing.MinMaxScaler(feature_range).fit(x)#get scale_,min_</div><div class="line">        x_scaled=Scaler.transform(x)</div><div class="line">    return x_scaled</div><div class="line"></div><div class="line">#taskFive Create an equifrequence box</div><div class="line">def binning_depth(list,depth):</div><div class="line">    head=tail=0 #recorded the local of each box</div><div class="line">    counter=0</div><div class="line">    for index1 in range(len(list)):</div><div class="line">        counter+=1</div><div class="line">        if(index1+2*depth&gt;len(list)):</div><div class="line">            if(len(list)-index1-depth&lt;0.5*depth):</div><div class="line">                head=len(list)</div><div class="line">                ave=average(list[tail:head])</div><div class="line">                while(tail!=head):</div><div class="line">                    list[tail]=ave</div><div class="line">                    tail+=1</div><div class="line">                return list</div><div class="line">        if(counter==depth or index1==len(list)-1):</div><div class="line">            head=index1+1</div><div class="line">            ave=average(list[tail:head])</div><div class="line">            while(tail!=head):</div><div class="line">                list[tail]=ave</div><div class="line">                tail+=1</div><div class="line">            counter=0</div><div class="line">    return list</div><div class="line"></div><div class="line">#taskSix</div><div class="line">import numpy as np</div><div class="line">def one_hot(referenceList,transformList):</div><div class="line">    newRrefence=[]</div><div class="line">    for list in referenceList:</div><div class="line">        newRrefence+=list</div><div class="line">    code=np.zeros(len(newRrefence))</div><div class="line">    for elemt in transformList:</div><div class="line">        code[newRrefence.index(elemt)]=1</div><div class="line">    return code</div></pre></td></tr></table></figure>
+<p>代码测试：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">if __name__==&apos;__main__&apos;:</div><div class="line">    print &apos;taskOne:&apos;</div><div class="line">    print indexList(listOne)</div><div class="line">    print &apos;taskTwo:&apos;</div><div class="line">    print aveStd(listOne)</div><div class="line">    print &apos;taskThree:&apos;</div><div class="line">    print opreList(listOne,listOne,&apos;add&apos;)</div><div class="line">    print &apos;taskFour:MaxMin:&apos;</div><div class="line">    print normalization(listOne,method=&apos;MaxMin&apos;,feature_range=(0,1))</div><div class="line">    print &apos;taskFour:z_score:&apos;</div><div class="line">    print normalization(listOne,method=&apos;z_score&apos;)</div><div class="line">    print &apos;taskFive:&apos;</div><div class="line">    print binning_depth(listOne,3)</div><div class="line">    print &apos;taskSix:&apos;</div><div class="line">    print one_hot(mixList,[&apos;steven&apos;,&apos;playing&apos;,&apos;home&apos;])</div></pre></td></tr></table></figure>
+<p>测试结果：<br><img src="http://img.blog.csdn.net/20161123173433605" alt="测试结果"></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/05/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/homePic.jpeg"
+               alt="Evan chen" />
+          <p class="site-author-name" itemprop="name">Evan chen</p>
+           
+              <p class="site-description motion-element" itemprop="description">七八个星天外,两三点雨山前。</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://weibo.com/5796760019/profile" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:chenh_cnyn@163.com" target="_blank" title="E-Mail">
+                  
+                    <i class="fa fa-fw fa-envelope"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Evan chen</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
